@@ -131,7 +131,8 @@
     "toolRunning": "运行中",
     "toolInput": "输入",
     "toolResult": "结果",
-    "unknownUser": "{platform}用户"
+    "unknownUser": "{platform}用户",
+    "files": "文件管理"
   },
   "models": {
     "title": "模型",

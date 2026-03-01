@@ -54,6 +54,7 @@ import {
   faVideo,
   faEnvelope,
   faChartLine,
+  faFolderOpen,
 } from '@fortawesome/free-solid-svg-icons'
 import {
   faRectangleList,
@@ -110,6 +111,7 @@ library.add(
   faMicrosoft,
   faEnvelope,
   faChartLine,
+  faFolderOpen,
   faYandex,
   ...customSearchIcons,
 )

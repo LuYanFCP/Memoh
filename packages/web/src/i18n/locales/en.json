@@ -135,7 +135,8 @@
     "toolRunning": "Running",
     "toolInput": "Input",
     "toolResult": "Result",
-    "unknownUser": "{platform} User"
+    "unknownUser": "{platform} User",
+    "files": "Files"
   },
   "models": {
     "title": "Models",
