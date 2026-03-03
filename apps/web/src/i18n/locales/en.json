@@ -859,6 +859,7 @@
         "discord": "Discord",
         "qq": "QQ",
         "telegram": "Telegram",
+        "slack": "Slack",
         "web": "Web",
         "local": "Local"
       },
@@ -867,6 +868,7 @@
         "discord": "DC",
         "qq": "QQ",
         "telegram": "TG",
+        "slack": "SL",
         "web": "Web",
         "local": "CLI"
       }

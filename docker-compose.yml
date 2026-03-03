@@ -72,7 +72,7 @@ services:
     image: memohai/web:latest
     container_name: memoh-web
     ports:
-      - "8082:8082"
+      - "8083:8082"
     depends_on:
       - server
       - agent

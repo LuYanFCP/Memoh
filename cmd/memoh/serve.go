@@ -33,6 +33,7 @@ import (
 	"github.com/memohai/memoh/internal/channel/adapters/feishu"
 	"github.com/memohai/memoh/internal/channel/adapters/local"
 	"github.com/memohai/memoh/internal/channel/adapters/qq"
+	slackadapter "github.com/memohai/memoh/internal/channel/adapters/slack"
 	"github.com/memohai/memoh/internal/channel/adapters/telegram"
 	"github.com/memohai/memoh/internal/channel/adapters/wecom"
 	"github.com/memohai/memoh/internal/channel/identities"
@@ -337,6 +338,9 @@ func provideChannelRegistry(log *slog.Logger, hub *local.RouteHub, mediaService 
 	feishuAdapter.SetAssetOpener(mediaService)
 	registry.MustRegister(feishuAdapter)
 	registry.MustRegister(wecom.NewWeComAdapter(log))
+	slackAdapter := slackadapter.NewSlackAdapter(log)
+	slackAdapter.SetAssetOpener(mediaService)
+	registry.MustRegister(slackAdapter)
 	registry.MustRegister(local.NewCLIAdapter(hub))
 	registry.MustRegister(local.NewWebAdapter(hub))
 	return registry
