@@ -11,14 +11,24 @@ function parseDate(value: string | null | undefined): Date | null {
   return Number.isNaN(parsed.getTime()) ? null : parsed
 }
 
+/**
+ * Resolves the display string when a date value is non-null but could not be
+ * parsed.  `invalidFallback` takes precedence over `fallback`; when neither is
+ * supplied the raw input value is returned so callers can see what arrived.
+ */
+function resolveInvalid(value: string, options: FormatDateOptions): string {
+  if (options.invalidFallback !== undefined) return options.invalidFallback
+  if (options.fallback !== undefined) return options.fallback
+  return value
+}
+
 export function formatDateTime(
   value: string | null | undefined,
   options: FormatDateOptions = {},
 ): string {
+  if (!value) return options.fallback ?? ''
   const parsed = parseDate(value)
-  if (!parsed) {
-    return options.fallback ?? ''
-  }
+  if (!parsed) return resolveInvalid(value, options)
   return parsed.toLocaleString()
 }
 
@@ -26,10 +36,9 @@ export function formatDate(
   value: string | null | undefined,
   options: FormatDateOptions = {},
 ): string {
+  if (!value) return options.fallback ?? ''
   const parsed = parseDate(value)
-  if (!parsed) {
-    return options.fallback ?? ''
-  }
+  if (!parsed) return resolveInvalid(value, options)
   return parsed.toLocaleDateString()
 }
 
@@ -37,13 +46,9 @@ export function formatDateTimeSeconds(
   value: string | null | undefined,
   options: FormatDateOptions = {},
 ): string {
-  if (!value) {
-    return options.fallback ?? ''
-  }
-  const parsed = new Date(value)
-  if (Number.isNaN(parsed.getTime())) {
-    return options.invalidFallback ?? value
-  }
+  if (!value) return options.fallback ?? ''
+  const parsed = parseDate(value)
+  if (!parsed) return resolveInvalid(value, options)
 
   const year = parsed.getFullYear()
   const month = String(parsed.getMonth() + 1).padStart(2, '0')
@@ -68,7 +73,7 @@ export function formatRelativeTime(
 ): string {
   if (!value) return options.fallback ?? ''
   const date = value instanceof Date ? value : parseDate(value)
-  if (!date) return options.fallback ?? ''
+  if (!date) return resolveInvalid(value as string, options)
 
   const diffMs = date.getTime() - Date.now()
   const absDiffSec = Math.abs(diffMs) / 1000
@@ -79,5 +84,6 @@ export function formatRelativeTime(
   if (absDiffSec < 86_400) return rtf.format(Math.round(diffMs / 3_600_000), 'hour')
   if (absDiffSec < 604_800) return rtf.format(Math.round(diffMs / 86_400_000), 'day')
 
+  // Beyond a week: absolute date is more readable than "34 days ago"
   return date.toLocaleDateString()
 }
