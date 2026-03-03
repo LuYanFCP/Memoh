@@ -522,12 +522,14 @@
       "types": {
         "feishu": "飞书",
         "telegram": "Telegram",
+        "slack": "Slack",
         "web": "Web",
         "local": "本地"
       },
       "typesShort": {
         "feishu": "飞",
         "telegram": "TG",
+        "slack": "SL",
         "web": "Web",
         "local": "CLI"
       }

@@ -526,12 +526,14 @@
       "types": {
         "feishu": "Feishu",
         "telegram": "Telegram",
+        "slack": "Slack",
         "web": "Web",
         "local": "Local"
       },
       "typesShort": {
         "feishu": "FS",
         "telegram": "TG",
+        "slack": "SL",
         "web": "Web",
         "local": "CLI"
       }
