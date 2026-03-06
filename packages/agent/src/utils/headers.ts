@@ -1,6 +1,10 @@
 import { AgentAuthContext, IdentityContext } from '../types'
 
-export const buildIdentityHeaders = (identity: IdentityContext, auth: AgentAuthContext) => {
+export interface BuildHeadersOptions {
+  isSubagent?: boolean
+}
+
+export const buildIdentityHeaders = (identity: IdentityContext, auth: AgentAuthContext, options?: BuildHeadersOptions) => {
   const headers: Record<string, string> = {
     Authorization: `Bearer ${auth.bearer}`,
   }
@@ -12,6 +16,9 @@ export const buildIdentityHeaders = (identity: IdentityContext, auth: AgentAuthC
   }
   if (identity.currentPlatform) {
     headers['X-Memoh-Current-Platform'] = identity.currentPlatform
+  }
+  if (options?.isSubagent) {
+    headers['X-Memoh-Is-Subagent'] = 'true'
   }
   return headers
 }

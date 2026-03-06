@@ -56,7 +56,10 @@ import (
 	mcpmemory "github.com/memohai/memoh/internal/mcp/providers/memory"
 	mcpmessage "github.com/memohai/memoh/internal/mcp/providers/message"
 	mcpschedule "github.com/memohai/memoh/internal/mcp/providers/schedule"
+	mcpskill "github.com/memohai/memoh/internal/mcp/providers/skill"
+	mcpsubagent "github.com/memohai/memoh/internal/mcp/providers/subagent"
 	mcpweb "github.com/memohai/memoh/internal/mcp/providers/web"
+	mcpwebfetch "github.com/memohai/memoh/internal/mcp/providers/webfetch"
 	mcpfederation "github.com/memohai/memoh/internal/mcp/sources/federation"
 	"github.com/memohai/memoh/internal/media"
 	memprovider "github.com/memohai/memoh/internal/memory/provider"
@@ -450,7 +453,7 @@ func provideOAuthService(log *slog.Logger, queries *dbsqlc.Queries, cfg config.C
 	return mcp.NewOAuthService(log, queries, callbackURL)
 }
 
-func provideToolGatewayService(log *slog.Logger, _ config.Config, channelManager *channel.Manager, registry *channel.Registry, routeService *route.DBService, scheduleService *schedule.Service, _ *conversation.Service, _ *accounts.Service, settingsService *settings.Service, searchProviderService *searchproviders.Service, manager *mcp.Manager, containerdHandler *handlers.ContainerdHandler, mcpConnService *mcp.ConnectionService, mediaService *media.Service, inboxService *inbox.Service, memoryRegistry *memprovider.Registry, emailService *emailpkg.Service, emailManager *emailpkg.Manager, fedGateway *handlers.MCPFederationGateway, oauthService *mcp.OAuthService) *mcp.ToolGatewayService {
+func provideToolGatewayService(log *slog.Logger, cfg config.Config, channelManager *channel.Manager, registry *channel.Registry, routeService *route.DBService, scheduleService *schedule.Service, _ *conversation.Service, _ *accounts.Service, settingsService *settings.Service, searchProviderService *searchproviders.Service, manager *mcp.Manager, containerdHandler *handlers.ContainerdHandler, mcpConnService *mcp.ConnectionService, mediaService *media.Service, inboxService *inbox.Service, memoryRegistry *memprovider.Registry, emailService *emailpkg.Service, emailManager *emailpkg.Manager, fedGateway *handlers.MCPFederationGateway, oauthService *mcp.OAuthService, subagentService *subagent.Service, modelsService *models.Service, queries *dbsqlc.Queries) *mcp.ToolGatewayService {
 	fedGateway.SetOAuthService(oauthService)
 	var assetResolver mcpmessage.AssetResolver
 	if mediaService != nil {
@@ -465,10 +468,13 @@ func provideToolGatewayService(log *slog.Logger, _ config.Config, channelManager
 	fsExec := mcpcontainer.NewExecutor(log, manager, config.DefaultDataMount)
 	fedSource := mcpfederation.NewSource(log, fedGateway, mcpConnService)
 	emailExec := mcpemail.NewExecutor(log, emailService, emailManager)
+	webFetchExec := mcpwebfetch.NewExecutor(log)
+	subagentExec := mcpsubagent.NewExecutor(log, subagentService, settingsService, modelsService, queries, cfg.AgentGateway.BaseURL())
+	skillExec := mcpskill.NewExecutor(log)
 
 	svc := mcp.NewToolGatewayService(
 		log,
-		[]mcp.ToolExecutor{messageExec, contactsExec, scheduleExec, memoryExec, webExec, fsExec, inboxExec, emailExec},
+		[]mcp.ToolExecutor{messageExec, contactsExec, scheduleExec, memoryExec, webExec, fsExec, inboxExec, emailExec, webFetchExec, subagentExec, skillExec},
 		[]mcp.ToolSource{fedSource},
 	)
 	containerdHandler.SetToolGatewayService(svc)

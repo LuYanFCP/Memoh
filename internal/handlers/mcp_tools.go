@@ -19,6 +19,7 @@ const (
 	headerSessionToken      = "X-Memoh-Session-Token" //nolint:gosec // G101: this is an HTTP header name, not a hardcoded credential
 	headerCurrentPlatform   = "X-Memoh-Current-Platform"
 	headerReplyTarget       = "X-Memoh-Reply-Target"
+	headerIsSubagent        = "X-Memoh-Is-Subagent"
 )
 
 func (h *ContainerdHandler) SetToolGatewayService(service *mcpgw.ToolGatewayService) {
@@ -230,6 +231,7 @@ func (*ContainerdHandler) buildToolSessionContext(c echo.Context, botID string) 
 			channelIdentityID = strings.TrimSpace(ctxIdentityID)
 		}
 	}
+	isSubagent := strings.EqualFold(strings.TrimSpace(c.Request().Header.Get(headerIsSubagent)), "true")
 	return mcpgw.ToolSessionContext{
 		BotID:             strings.TrimSpace(botID),
 		ChatID:            strings.TrimSpace(botID),
@@ -237,5 +239,6 @@ func (*ContainerdHandler) buildToolSessionContext(c echo.Context, botID string) 
 		SessionToken:      strings.TrimSpace(c.Request().Header.Get(headerSessionToken)),
 		CurrentPlatform:   strings.TrimSpace(c.Request().Header.Get(headerCurrentPlatform)),
 		ReplyTarget:       strings.TrimSpace(c.Request().Header.Get(headerReplyTarget)),
+		IsSubagent:        isSubagent,
 	}
 }

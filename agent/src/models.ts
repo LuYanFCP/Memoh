@@ -1,5 +1,4 @@
 import z from 'zod'
-import { allActions } from '@memoh/agent'
 
 export const AgentSkillModel = z.object({
   name: z.string().min(1, 'Skill name is required'),
@@ -25,8 +24,6 @@ export const ModelConfigModel = z.object({
   baseUrl: z.string(),
   reasoning: ReasoningConfigModel,
 })
-
-export const AllowedActionModel = z.enum(allActions)
 
 export const IdentityContextModel = z.object({
   botId: z.string().min(1, 'Bot ID is required'),

@@ -1,9 +1,9 @@
 import { Elysia } from 'elysia'
 import z from 'zod'
-import { createAgent, ModelConfig, allActions } from '@memoh/agent'
+import { createAgent, ModelConfig } from '@memoh/agent'
 import { createAuthFetcher, getBaseUrl } from '../index'
 import { bearerMiddleware } from '../middlewares/bearer'
-import { AgentSkillModel, AllowedActionModel, AttachmentModel, HeartbeatModel, IdentityContextModel, InboxItemModel, LoopDetectionModel, MCPConnectionModel, ModelConfigModel, ScheduleModel } from '../models'
+import { AgentSkillModel, AttachmentModel, HeartbeatModel, IdentityContextModel, InboxItemModel, LoopDetectionModel, MCPConnectionModel, ModelConfigModel, ScheduleModel } from '../models'
 import { sseChunked } from '../utils/sse'
 
 const AgentModel = z.object({
@@ -11,7 +11,6 @@ const AgentModel = z.object({
   activeContextTime: z.number(),
   channels: z.array(z.string()),
   currentChannel: z.string(),
-  allowedActions: z.array(AllowedActionModel).optional().default(allActions),
   messages: z.array(z.any()),
   usableSkills: z.array(AgentSkillModel).optional().default([]),
   skills: z.array(z.string()),
@@ -36,7 +35,6 @@ export const chatModule = new Elysia({ prefix: '/chat' })
       activeContextTime: body.activeContextTime,
       channels: body.channels,
       currentChannel: body.currentChannel,
-      allowedActions: body.allowedActions,
       identity: body.identity,
       auth,
       skills: body.usableSkills,
@@ -68,7 +66,6 @@ export const chatModule = new Elysia({ prefix: '/chat' })
         activeContextTime: body.activeContextTime,
         channels: body.channels,
         currentChannel: body.currentChannel,
-        allowedActions: body.allowedActions,
         identity: body.identity,
         auth,
         skills: body.usableSkills,
@@ -155,5 +152,36 @@ export const chatModule = new Elysia({ prefix: '/chat' })
   }, {
     body: AgentModel.extend({
       heartbeat: HeartbeatModel,
+    }),
+  })
+  .post('/subagent', async ({ body, bearer }) => {
+    console.log('subagent', body)
+    const auth = {
+      bearer: bearer!,
+      baseUrl: getBaseUrl(),
+    }
+    const authFetcher = createAuthFetcher(auth)
+    const { askAsSubagent } = createAgent({
+      model: body.model as ModelConfig,
+      identity: body.identity,
+      auth,
+      isSubagent: true,
+      loopDetection: body.loopDetection,
+    }, authFetcher)
+    return askAsSubagent({
+      messages: body.messages,
+      input: body.query,
+      name: body.name,
+      description: body.description,
+    })
+  }, {
+    body: z.object({
+      model: ModelConfigModel,
+      identity: IdentityContextModel,
+      messages: z.array(z.any()).optional().default([]),
+      query: z.string(),
+      name: z.string(),
+      description: z.string(),
+      loopDetection: LoopDetectionModel,
     }),
   })

@@ -241,7 +241,6 @@ type ChatRequest struct {
 	CurrentChannel     string           `json:"current_channel,omitempty"`
 	Messages           []ModelMessage   `json:"messages,omitempty"`
 	Skills             []string         `json:"skills,omitempty"`
-	AllowedActions     []string         `json:"allowed_actions,omitempty"`
 	Attachments        []ChatAttachment `json:"attachments,omitempty"`
 }
 

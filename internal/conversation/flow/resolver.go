@@ -187,7 +187,6 @@ type gatewayRequest struct {
 	ActiveContextTime int                         `json:"activeContextTime"`
 	Channels          []string                    `json:"channels"`
 	CurrentChannel    string                      `json:"currentChannel"`
-	AllowedActions    []string                    `json:"allowedActions,omitempty"`
 	Messages          []conversation.ModelMessage `json:"messages"`
 	Skills            []string                    `json:"skills"`
 	UsableSkills      []gatewaySkill              `json:"usableSkills"`
@@ -456,7 +455,6 @@ func (r *Resolver) resolve(ctx context.Context, req conversation.ChatRequest) (r
 		ActiveContextTime: maxCtx,
 		Channels:          nonNilStrings(req.Channels),
 		CurrentChannel:    req.CurrentChannel,
-		AllowedActions:    req.AllowedActions,
 		Messages:          nonNilModelMessages(messages),
 		Skills:            nonNilStrings(skills),
 		UsableSkills:      usableSkills,
