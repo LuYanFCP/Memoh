@@ -28,18 +28,25 @@ The **Overview** tab provides a quick health check of the bot's services. It mon
 
 If any check shows a warning or error, follow the provided details to troubleshoot.
 
-## Configuring the Bot's Brain (Models)
+## Configuring the Bot's Core Settings
 
-After creating a bot, the most important step is assigning its LLM models. These define how the bot thinks, remembers, and processes information.
+After creating a bot, the most important step is configuring its runtime settings. These define how the bot talks, remembers, searches, and uses browser automation.
 
-1.  Navigate to your bot's **Detail Page**.
-2.  Go to the **Settings** tab.
-3.  In the **Model Selection** section, you will find three dropdowns:
-    -   **Chat Model**: Used for standard conversations with users. Select a high-quality chat model (e.g., GPT-4o).
-    -   **Memory Model**: Used for summarizing context and extracting key facts into the bot's long-term memory.
-    -   **Embedding Model**: Used to convert text into vector embeddings for semantic search within the memory system. This must be an `embedding` type model.
-4.  Select the models you previously configured in the [Models](/getting-started/provider-and-model) page.
-5.  Click **Save** at the bottom of the form.
+1. Navigate to your bot's **Detail Page**.
+2. Go to the **Settings** tab.
+3. Configure the core fields:
+   - **Chat Model**: Used for standard conversations with users.
+   - **Memory Provider**: Select the memory backend the bot should use.
+   - **Search Provider**: Select the search engine provider for web search.
+   - **Browser Context**: Select the browser profile the bot should use for browser automation.
+4. Click **Save** at the bottom of the form.
+
+If you have not created these resources yet, set them up first:
+
+- [LLM Provider and Model](/getting-started/provider-and-model.md)
+- [Built-in Memory Provider](/memory-providers/builtin.md)
+- [Search Providers](/getting-started/search-provider.md)
+- [Browser Contexts](/getting-started/browser.md)
 
 ---
 
@@ -50,9 +57,9 @@ The **Settings** tab contains all the core parameters that define your bot's beh
 | Field | Description |
 |-------|-------------|
 | **Chat Model** | The main LLM used for generating chat responses. |
-| **Memory Model** | The LLM used for summarizing context and managing memories. |
-| **Embedding Model** | The model used to generate vector embeddings for semantic memory search. |
+| **Memory Provider** | The memory backend assigned to the bot. The built-in provider can optionally define its own memory and embedding models. |
 | **Search Provider** | The search engine used for web browsing capabilities. |
+| **Browser Context** | The browser environment used for web automation, such as viewport, locale, and mobile behavior. |
 | **Max Context Load Time** | Time limit (seconds) for loading context before generation. |
 | **Max Context Tokens** | Token limit for the loaded conversation history. |
 | **Language** | The bot's primary communication language. |

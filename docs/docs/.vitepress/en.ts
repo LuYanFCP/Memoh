@@ -49,6 +49,10 @@ export const en = [
         link: '/getting-started/channels.md'
       },
       {
+        text: 'Browser Contexts',
+        link: '/getting-started/browser.md'
+      },
+      {
         text: 'Memory Management',
         link: '/getting-started/memory.md'
       },
@@ -71,6 +75,19 @@ export const en = [
       {
         text: 'Email Providers',
         link: '/getting-started/email.md'
+      },
+    ]
+  },
+  {
+    text: 'Memory Providers',
+    items: [
+      {
+        text: 'Overview',
+        link: '/memory-providers/index.md'
+      },
+      {
+        text: 'Built-in',
+        link: '/memory-providers/builtin.md'
       },
     ]
   },

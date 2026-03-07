@@ -44,6 +44,7 @@ Unified channel adapter architecture for connecting to multiple messaging platfo
 Bots come with a rich set of built-in tools:
 
 - **Web Search** — Configurable search providers (Brave, Bing, Google, Tavily, SearXNG, DuckDuckGo, and more) for real-time information
+- **Browser Automation** — Use Playwright-powered browser tools for navigation, clicking, form filling, screenshots, PDF export, and rendered page inspection
 - **Subagents** — Create specialized subagents with independent context, assign skills, and delegate complex tasks
 - **Skills** — Define bot personality via IDENTITY.md, SOUL.md, and modular skill files that bots can enable/disable at runtime
 - **Container Operations** — Read/write files, edit code, and execute commands inside the container
