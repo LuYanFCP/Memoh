@@ -448,6 +448,7 @@ func provideChannelManager(log *slog.Logger, registry *channel.Registry, channel
 	if mw := channelRouter.IdentityMiddleware(); mw != nil {
 		mgr.Use(mw)
 	}
+	channelRouter.SetReactor(mgr)
 	return mgr
 }
 

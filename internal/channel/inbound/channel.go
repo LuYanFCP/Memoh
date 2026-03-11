@@ -39,6 +39,10 @@ type RouteResolver interface {
 	ResolveConversation(ctx context.Context, input route.ResolveInput) (route.ResolveConversationResult, error)
 }
 
+type channelReactor interface {
+	React(ctx context.Context, botID string, channelType channel.ChannelType, req channel.ReactRequest) error
+}
+
 type mediaIngestor interface {
 	Ingest(ctx context.Context, input media.IngestInput) (media.Asset, error)
 	// GetByStorageKey resolves an asset by reading its sidecar JSON.
@@ -55,6 +59,7 @@ type ChannelInboundProcessor struct {
 	routeResolver RouteResolver
 	message       messagepkg.Writer
 	mediaService  mediaIngestor
+	reactor       channelReactor
 	inboxService  *inbox.Service
 	registry      *channel.Registry
 	logger        *slog.Logger
@@ -112,6 +117,14 @@ func (p *ChannelInboundProcessor) SetMediaService(mediaService mediaIngestor) {
 		return
 	}
 	p.mediaService = mediaService
+}
+
+// SetReactor configures the channel reactor for handling inline emoji reactions.
+func (p *ChannelInboundProcessor) SetReactor(reactor channelReactor) {
+	if p == nil {
+		return
+	}
+	p.reactor = reactor
 }
 
 // SetStreamObserver configures an observer that receives copies of all stream
@@ -442,6 +455,10 @@ func (p *ChannelInboundProcessor) HandleInbound(ctx context.Context, cfg channel
 						outboundAssetRefs = append(outboundAssetRefs, ref)
 					}
 					assetMu.Unlock()
+				}
+				if event.Type == channel.StreamEventReaction && len(event.Reactions) > 0 {
+					p.dispatchReactions(ctx, identity.BotID, msg.Channel, target, sourceMessageID, event.Reactions)
+					continue
 				}
 				if pushErr := stream.Push(ctx, events[i]); pushErr != nil {
 					streamErr = pushErr
@@ -861,6 +878,7 @@ type gatewayStreamEnvelope struct {
 	Input       json.RawMessage `json:"input"`
 	Result      json.RawMessage `json:"result"`
 	Attachments json.RawMessage `json:"attachments"`
+	Reactions   json.RawMessage `json:"reactions"`
 }
 
 type gatewayStreamDoneData struct {
@@ -953,6 +971,14 @@ func mapStreamChunkToChannelEvents(chunk conversation.StreamChunk) ([]channel.St
 		}
 		return []channel.StreamEvent{
 			{Type: channel.StreamEventAttachment, Attachments: attachments},
+		}, finalMessages, nil
+	case "reaction_delta":
+		reactions := parseReactionDelta(envelope.Reactions)
+		if len(reactions) == 0 {
+			return nil, finalMessages, nil
+		}
+		return []channel.StreamEvent{
+			{Type: channel.StreamEventReaction, Reactions: reactions},
 		}, finalMessages, nil
 	case "agent_start":
 		return []channel.StreamEvent{
@@ -1933,6 +1959,73 @@ func parseAttachmentDelta(raw json.RawMessage) []channel.Attachment {
 		})
 	}
 	return attachments
+}
+
+// parseReactionDelta converts raw JSON reaction data to channel ReactRequests.
+func parseReactionDelta(raw json.RawMessage) []channel.ReactRequest {
+	if len(raw) == 0 {
+		return nil
+	}
+	var items []struct {
+		Emoji string `json:"emoji"`
+	}
+	if err := json.Unmarshal(raw, &items); err != nil {
+		return nil
+	}
+	reactions := make([]channel.ReactRequest, 0, len(items))
+	for _, item := range items {
+		emoji := strings.TrimSpace(item.Emoji)
+		if emoji == "" {
+			continue
+		}
+		reactions = append(reactions, channel.ReactRequest{
+			Emoji: emoji,
+		})
+	}
+	return reactions
+}
+
+// dispatchReactions sends emoji reactions to the channel for the source message.
+func (p *ChannelInboundProcessor) dispatchReactions(
+	ctx context.Context,
+	botID string,
+	channelType channel.ChannelType,
+	target string,
+	sourceMessageID string,
+	reactions []channel.ReactRequest,
+) {
+	if p.reactor == nil {
+		return
+	}
+	target = strings.TrimSpace(target)
+	sourceMessageID = strings.TrimSpace(sourceMessageID)
+	if target == "" || sourceMessageID == "" {
+		if p.logger != nil {
+			p.logger.Warn("cannot dispatch reactions: missing target or source message ID",
+				slog.String("bot_id", botID),
+				slog.String("channel", channelType.String()),
+			)
+		}
+		return
+	}
+	for _, reaction := range reactions {
+		req := channel.ReactRequest{
+			Target:    target,
+			MessageID: sourceMessageID,
+			Emoji:     reaction.Emoji,
+		}
+		if err := p.reactor.React(ctx, strings.TrimSpace(botID), channelType, req); err != nil {
+			if p.logger != nil {
+				p.logger.Warn("inline reaction failed",
+					slog.String("bot_id", botID),
+					slog.String("channel", channelType.String()),
+					slog.String("emoji", reaction.Emoji),
+					slog.String("message_id", sourceMessageID),
+					slog.Any("error", err),
+				)
+			}
+		}
+	}
 }
 
 // buildRouteMetadata extracts user/conversation information for route metadata persistence.
