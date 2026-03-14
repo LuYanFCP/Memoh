@@ -137,21 +137,6 @@ services:
     networks:
       - memoh-network
 
-  openviking:
-    image: volcengine/openviking:latest
-    container_name: memoh-openviking
-    profiles: [openviking]
-    env_file:
-      - path: ${OPENVIKING_ENV_FILE:-.env.openviking}
-        required: false
-    volumes:
-      - openviking_data:/var/lib/openviking
-    expose:
-      - "8088"
-    restart: unless-stopped
-    networks:
-      - memoh-network
-
 volumes:
   postgres_data:
     driver: local
